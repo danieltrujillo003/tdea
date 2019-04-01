@@ -1,4 +1,11 @@
 {{>header}}
     <p>{{{getSingleCourse singleCourse}}}</p>
+    <form action="/inscrito" method="POST">
+    <label>id del curso: <input type="number" name="courseId" value="{{singleCourse.id}}" readonly /></label><br>
+    <label>Nombre: <input type="text" name="name" required /></label><br>
+    <label>Documento de identidad: <input type="number" name="id" required /></label><br>
+    <label>Correo electrónico: <input type="email" name="email" required /></label><br>
+    <label>Teléfono: <input type="number" name="phone" required /></label><br>
+    <input type="submit" value="Inscribir">
 </form>
 {{>footer}}

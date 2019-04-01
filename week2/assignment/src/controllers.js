@@ -24,6 +24,7 @@ const getCourses = (req, res) => {
 
 const getSingleCourse = (req, res) => {
   let singleCourse = courses.find(course => course.id === req.params.id);
+  console.log(singleCourse);
   res.render("singleCourse", {
     title: singleCourse.name,
     singleCourse
@@ -39,7 +40,8 @@ const postCourse = (req, res) => {
     value,
     mode,
     hours,
-    avaliable: "disponible"
+    avaliable: "disponible",
+    suscribed: []
   };
   if (courses.find(el => el.id === newCourse.id)) {
     let errMsg = "El curso con el id ingresado ya existe";
@@ -86,6 +88,35 @@ const courseUpdated = (req, res) => {
     });
   }
 };
+
+const postSubscription = (req, res) => {
+  const { name, id, email, phone, courseId } = req.body;
+  try {
+    let selectedCourse = courses.find(course => course.id === courseId);
+    if (selectedCourse.suscribed.some(user => user.id === id)) {
+      res.render("subscribed", {
+        title: "Inscripción no realizada",
+        msg: "Estudiante ya matriculado en este curso"
+      });
+      return
+    }
+    selectedCourse.suscribed = [...selectedCourse.suscribed, {name, id, email, phone}];
+    coursesStr = JSON.stringify(courses);
+    fs.writeFile("src/courses.json", coursesStr, err => {
+      if (err) throw err;
+    });
+    res.render("subscribed", {
+      title: "Inscripción a un curso",
+      name,
+      course: selectedCourse.name
+    });
+  } catch (err) {
+    res.render("subscribed", {
+      title: "Inscripción no realizada",
+      msg: err
+    });
+  }
+};
 module.exports = {
   courses,
   getForm,
@@ -96,5 +127,5 @@ module.exports = {
   getSingleCourse,
   updateCourse,
   courseUpdated,
-  
+  postSubscription
 };

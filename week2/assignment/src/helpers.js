@@ -41,3 +41,9 @@ hbs.registerHelper("updateHelper", () => {
   return info;
 });
 
+hbs.registerHelper("courseSubscribedHelper", (name, course, msg) => {
+  console.log({name})
+  console.log({course})
+  // console.log({msg})
+  return msg ? msg : (`${name} subscribed to ${course}`);  
+})
