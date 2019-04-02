@@ -12,7 +12,9 @@ const {
   getSingleCourse,
   updateCourse,
   courseUpdated,
-  postSubscription
+  postSubscription,
+  getListAdmin,
+  removeUser
 } = require("./controllers");
 
 app.use(express.static("public"));
@@ -32,6 +34,8 @@ app.get("/lista/:id", getSingleCourse);
 app.get("/actualizar", updateCourse);
 app.post("/actualizado", courseUpdated);
 app.post("/inscrito", postSubscription);
+app.get("/listaAdmin", getListAdmin);
+app.post("/listaAdmin", removeUser);
 app.get("*", get404);
 
 const PORT = process.env.PORT || 3000;

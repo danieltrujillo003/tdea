@@ -24,7 +24,6 @@ const getCourses = (req, res) => {
 
 const getSingleCourse = (req, res) => {
   let singleCourse = courses.find(course => course.id === req.params.id);
-  console.log(singleCourse);
   res.render("singleCourse", {
     title: singleCourse.name,
     singleCourse
@@ -117,6 +116,45 @@ const postSubscription = (req, res) => {
     });
   }
 };
+
+const getListAdmin = (req, res) => {
+  if (!courses.length) {
+    res.render("listAdmin", {
+      title: "No hay cursos para listar"
+    });
+    return
+  }
+  res.render("listAdmin", {
+    title: "Lista de cursos (Coordinador)"
+  });
+}
+
+const removeUser = (req, res) => {
+  if (Array.isArray(req.body.name)) {
+
+    req.body.name.forEach(name => {
+      let userArray = name.split("+")
+      handleRemove(userArray[0], userArray[1])
+    })
+  } else {
+    let userArray = req.body.name.split("+")
+    handleRemove(userArray[0], userArray[1])
+  }
+  coursesStr = JSON.stringify(courses);
+    fs.writeFile("src/courses.json", coursesStr, err => {
+      if (err) throw err;
+    });
+    res.render("listAdmin", {
+      title: "Lista de cursos (Coordinador)"
+    });
+  
+}
+
+const handleRemove = (id, name) => {
+  let selectedCourse = courses.find(course => course.id === id)
+  selectedCourse.suscribed = selectedCourse.suscribed.filter(user => user.name != name)
+}
+
 module.exports = {
   courses,
   getForm,
@@ -127,5 +165,7 @@ module.exports = {
   getSingleCourse,
   updateCourse,
   courseUpdated,
-  postSubscription
+  postSubscription,
+  getListAdmin,
+  removeUser
 };

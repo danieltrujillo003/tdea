@@ -15,6 +15,22 @@ hbs.registerHelper("listCourses", () => {
   return info;
 });
 
+hbs.registerHelper("listCoursesAdmin", () => {
+  let info = '<form action="" method="POST">';
+  courses.forEach(course => {
+    info += `<h2>${course.name}</h2>
+    `
+    course.suscribed.forEach(user => {
+      info += `
+      <label><input type="checkbox" name="name" value="${course.id}+${user.name}">${user.name}</label><br>
+      
+      `
+    })
+  });
+  info += '<br><button type="submit">Eliminar</button></form>';
+  return info;
+});
+
 hbs.registerHelper("createCourse", (newCourse, errMsg) => {
   return errMsg ? errMsg : newCourse.name;
 });
@@ -42,8 +58,5 @@ hbs.registerHelper("updateHelper", () => {
 });
 
 hbs.registerHelper("courseSubscribedHelper", (name, course, msg) => {
-  console.log({name})
-  console.log({course})
-  // console.log({msg})
   return msg ? msg : (`${name} subscribed to ${course}`);  
 })
