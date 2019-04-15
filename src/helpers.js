@@ -1,5 +1,4 @@
 const hbs = require("hbs");
-const { courses } = require("./controllers");
 
 hbs.registerHelper("listCourses", (list) => {
   let info = "";

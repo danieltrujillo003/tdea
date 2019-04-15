@@ -1,10 +1,6 @@
 const fs = require("fs");
 const Course = require("./models/course");
 
-let courses = fs.existsSync("./src/courses.json")
-  ? require("./courses.json")
-  : [];
-
 const getIndex = (req, res) => {
   res.render("index", {
     title: "CRUD CURSOS"
@@ -217,7 +213,6 @@ const handleRemove = (id, name) => {
 };
 
 module.exports = {
-  courses,
   getForm,
   getIndex,
   postCourse,

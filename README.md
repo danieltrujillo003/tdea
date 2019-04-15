@@ -5,6 +5,8 @@
 - express
 - hbs
 - CRUD
+- mongo
+- mongoose
 - git
 
 ## Description
@@ -16,8 +18,7 @@ With this app, a coordinator can create courses, see students suscribed to each 
 Run the following commands in the terminal:
 
 1. `git clone https://github.com/danieltrujillo003/tdea.git`
-2. `cd tdea/week2/assignment`
-3. `npm i`
-4. `npm start`
+2. `npm i`
+3. `npm start`
 
 Now you have the app running on http://localhost:3000/. Go to to that URL and explore the menu and all of the features.
