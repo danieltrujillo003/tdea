@@ -1,5 +1,5 @@
 {{>header}}
-    <p>{{{getSingleCourse singleCourse}}}</p>
+    {{{getSingleCourse singleCourse}}}
     <form action="/inscrito" method="POST">
     <label>Id del curso: <input type="number" name="courseId" value="{{singleCourse.id}}" readonly /></label><br>
     <label>Nombre: <input type="text" name="name" required /></label><br>

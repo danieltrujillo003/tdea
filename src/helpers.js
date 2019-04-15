@@ -1,12 +1,9 @@
 const hbs = require("hbs");
 const { courses } = require("./controllers");
 
-hbs.registerHelper("listCourses", () => {
+hbs.registerHelper("listCourses", (list) => {
   let info = "";
-  avaliableCourses = courses.filter(
-    course => course.avaliable === "disponible"
-  );
-  avaliableCourses.forEach(course => {
+  list.forEach(course => {
     info += `<h2><a href="/lista/${course.id}">${course.name}</a></h2>
     <p><strong>Descripción:</strong> ${course.description}</p>
     <p><strong>Precio:</strong> $${course.value}</p>
@@ -15,9 +12,9 @@ hbs.registerHelper("listCourses", () => {
   return info;
 });
 
-hbs.registerHelper("listCoursesAdmin", () => {
+hbs.registerHelper("listCoursesAdmin", (list) => {
   let info = '<form action="" method="POST">';
-  courses.forEach(course => {
+  list.forEach(course => {
     info += `<h2>${course.name}</h2>
     `
     course.suscribed.forEach(user => {
@@ -31,14 +28,6 @@ hbs.registerHelper("listCoursesAdmin", () => {
   return info;
 });
 
-hbs.registerHelper("createCourse", (newCourse, errMsg) => {
-  return errMsg ? errMsg : newCourse.name;
-});
-
-hbs.registerHelper("courseUpdatedHelper", (updatedCourse, msg) => {
-  return msg ? msg : (`${updatedCourse.name} = ${updatedCourse.avaliable}`);
-});
-
 hbs.registerHelper("getSingleCourse", singleCourse => {
   let info = `<p><strong>Descripción:</strong> ${singleCourse.description}</p>
     <p><strong>Precio:</strong> $${singleCourse.value}</p>
@@ -48,9 +37,9 @@ hbs.registerHelper("getSingleCourse", singleCourse => {
   return info;
 });
 
-hbs.registerHelper("updateHelper", () => {
+hbs.registerHelper("updateHelper", (list) => {
   let info = `<label>Curso: <select name="name">`
-  courses.forEach(course => {
+  list.forEach(course => {
     info += `<option value="${course.name}">${course.name}</option>`    
   });
   info += `</select></label>`

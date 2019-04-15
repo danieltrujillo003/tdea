@@ -1,4 +1,5 @@
 const fs = require("fs");
+const Course = require("./models/course");
 
 let courses = fs.existsSync("./src/courses.json")
   ? require("./courses.json")
@@ -17,48 +18,77 @@ const getForm = (req, res) => {
 };
 
 const getCourses = (req, res) => {
-  res.render("list", {
-    title: "Lista de cursos"
+  Course.find({ avaliable: "disponible" }, (err, courses) => {
+    if (err) {
+      res.render("list", {
+        title: "Error"
+      });
+    } else {
+      res.render("list", {
+        title: "Lista de cursos",
+        list: courses
+      });
+    }
   });
 };
 
 const getSingleCourse = (req, res) => {
-  let singleCourse = courses.find(course => course.id === req.params.id);
-  res.render("singleCourse", {
-    title: singleCourse.name,
-    singleCourse
+  Course.findOne({ id: req.params.id }, (err, result) => {
+    if (err) {
+      res.render("added", {
+        title: "Error",
+        content: err
+      });
+    } else {
+      res.render("singleCourse", {
+        title: result.name,
+        singleCourse: result
+      });
+    }
   });
 };
 
 const postCourse = (req, res) => {
   const { name, id, description, value, mode, hours } = req.body;
-  let newCourse = {
+
+  let course = new Course({
     name,
     id,
     description,
     value,
     mode,
     hours,
-    avaliable: "disponible",
     suscribed: []
-  };
-  if (courses.find(el => el.id === newCourse.id)) {
-    let errMsg = "El curso con el id ingresado ya existe";
-    res.render("added", {
-      title: "Curso no agregado",
-      errMsg
-    });
-  } else {
-    courses.push(newCourse);
-    coursesStr = JSON.stringify(courses);
-    fs.writeFile("src/courses.json", coursesStr, err => {
-      if (err) throw err;
-    });
-    res.render("added", {
-      title: "Curso agregado",
-      newCourse
-    });
-  }
+  });
+
+  Course.find({}, (err, courses) => {
+    if (err) {
+      res.render("added", {
+        title: "Error",
+        content: err
+      });
+    } else if (courses.find(el => el.id === course.id)) {
+      let errMsg = "El curso con el id ingresado ya existe";
+      res.render("added", {
+        title: "Curso no agregado",
+        content: errMsg
+      });
+    } else {
+      course.save((err, newCourse) => {
+        if (err) {
+          res.render("added", {
+            title: "Falla agregando curso",
+            content: err
+          });
+        } else {
+          res.render("added", {
+            title: "Curso agregado",
+            content: `${newCourse.name} agregado`
+          });
+        }
+      });
+    }
+  });
 };
 
 const get404 = (req, res) => {
@@ -66,94 +96,125 @@ const get404 = (req, res) => {
 };
 
 const updateCourse = (req, res) => {
-  res.render("update", {
-    title: "Actualizar estado de un curso"
+  Course.find({}, (err, courses) => {
+    if (err) {
+      res.render("update", {
+        title: "Error",
+        list: courses
+      });
+    } else {
+      res.render("update", {
+        title: "Actualizar estado de un curso",
+        list: courses
+      });
+    }
   });
 };
 
 const courseUpdated = (req, res) => {
-  try {
-    const { name, avaliable } = req.body;
-    updatedCourse = courses.find(course => course.name === name);
-    updatedCourse.avaliable = avaliable;
-    res.render("updated", {
-      title: "Curso Actualizado",
-      updatedCourse
-    });
-  } catch (err) {
-    res.render("updated", {
-      title: "Curso no actualizado",
-      msg: err
-    });
-  }
+  const { name, avaliable } = req.body;
+  Course.findOneAndUpdate({ name }, { avaliable }, (err, result) => {
+    if (err) {
+      res.render("added", {
+        title: "Curso no actualizado",
+        content: err
+      });
+    } else {
+      result.avaliable = avaliable;
+      res.render("added", {
+        title: "Curso Actualizado",
+        content: `${result.name} = ${result.avaliable}`
+      });
+    }
+  });
 };
 
 const postSubscription = (req, res) => {
   const { name, id, email, phone, courseId } = req.body;
-  try {
-    let selectedCourse = courses.find(course => course.id === courseId);
-    if (selectedCourse.suscribed.some(user => user.id === id)) {
+  // Course.find({$and: [{ suscribed: {id} }, { id: courseId }]}, (err, result) => {
+  //   console.log(result)
+  //   if (result) {
+  //     res.render("subscribed", {
+  //       title: "Inscripción no realizada",
+  //       msg: "Estudiante ya matriculado en este curso"
+  //     });
+  //     return;
+  //   }
+  // })
+  Course.findOneAndUpdate(
+    { id: courseId },
+    { $push: { suscribed: { name, id, email, phone } } },
+    (err, result) => {
+      console.log(result);
+      if (err) {
+        res.render("added", {
+          title: "Curso no actualizado",
+          content: err
+        });
+      }
       res.render("subscribed", {
-        title: "Inscripción no realizada",
-        msg: "Estudiante ya matriculado en este curso"
+        title: "Inscripción a un curso",
+        name,
+        course: result.name
       });
-      return
     }
-    selectedCourse.suscribed = [...selectedCourse.suscribed, {name, id, email, phone}];
-    coursesStr = JSON.stringify(courses);
-    fs.writeFile("src/courses.json", coursesStr, err => {
-      if (err) throw err;
-    });
-    res.render("subscribed", {
-      title: "Inscripción a un curso",
-      name,
-      course: selectedCourse.name
-    });
-  } catch (err) {
-    res.render("subscribed", {
-      title: "Inscripción no realizada",
-      msg: err
-    });
-  }
+  );
 };
 
 const getListAdmin = (req, res) => {
-  if (!courses.length) {
-    res.render("listAdmin", {
-      title: "No hay cursos para listar"
-    });
-    return
-  }
-  res.render("listAdmin", {
-    title: "Lista de cursos (Coordinador)"
+  Course.find({}, (err, courses) => {
+    if (err) {
+      res.render("list", {
+        title: "Error"
+      });
+    } else if (!courses.length) {
+      res.render("listAdmin", {
+        title: "No hay cursos para listar",
+        list: courses
+      });
+      return;
+    } else {
+      res.render("listAdmin", {
+        title: "Lista de cursos (Coordinador)",
+        list: courses
+      });
+    }
   });
-}
+};
 
 const removeUser = (req, res) => {
   if (Array.isArray(req.body.name)) {
-
     req.body.name.forEach(name => {
-      let userArray = name.split("+")
-      handleRemove(userArray[0], userArray[1])
-    })
+      let userArray = name.split("+");
+      handleRemove(userArray[0], userArray[1]);
+    });
   } else {
-    let userArray = req.body.name.split("+")
-    handleRemove(userArray[0], userArray[1])
+    let userArray = req.body.name.split("+");
+    handleRemove(userArray[0], userArray[1]);
   }
-  coursesStr = JSON.stringify(courses);
-    fs.writeFile("src/courses.json", coursesStr, err => {
-      if (err) throw err;
-    });
-    res.render("listAdmin", {
-      title: "Lista de cursos (Coordinador)"
-    });
-  
-}
+  Course.find({}, (err, courses) => {
+    if (err) {
+      res.render("list", {
+        title: "Error"
+      });
+    } else {
+      res.render("listAdmin", {
+        title: "Lista de cursos (Coordinador)",
+        list: courses
+      });
+    }
+  });
+};
 
 const handleRemove = (id, name) => {
-  let selectedCourse = courses.find(course => course.id === id)
-  selectedCourse.suscribed = selectedCourse.suscribed.filter(user => user.name != name)
-}
+  Course.findOneAndUpdate(
+    { id },
+    { $pull: { suscribed: { name } } },
+    (err, result) => {
+      console.log(result);
+    }
+  );
+};
 
 module.exports = {
   courses,
